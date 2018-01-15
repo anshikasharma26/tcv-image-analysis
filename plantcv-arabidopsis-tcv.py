@@ -37,7 +37,7 @@ def main():
         # We only want to process files
         for filename in files:
             # Open the image file
-            img, path, fname = pcv.readimage(filename=filename, debug=args.debug)
+            img, path, fname = pcv.readimage(filename=os.path.join(root, filename), debug=args.debug)
             # Classify healthy and unhealthy plant pixels
             device, masks = pcv.naive_bayes_classifier(img=img, pdf_file=args.pdfs, device=device)
             # Fill small objects
