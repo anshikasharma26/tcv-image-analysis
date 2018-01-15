@@ -75,13 +75,13 @@ def main():
 
             # Initialize hue histogram
             hue_hist = {}
-            for i in range(0, 360):
+            for i in range(0, 179):
                 hue_hist[i] = 0
 
             # Populate histogram
             total_px = len(plant_hues)
             for hue in plant_hues:
-                hue_hist[hue * 2] += 1
+                hue_hist[hue] += 1
 
             # Parse the filename
             genotype, treatment, replicate, timepoint = filename[:-4].split("_")
@@ -92,7 +92,7 @@ def main():
                 timepoint = timepoint.replace("dpi", "")
 
             # Output results
-            for i in range(0, 360):
+            for i in range(0, 179):
                 out.write("\t".join(map(str,
                                         [genotype, treatment, timepoint, replicate, total_px, i, hue_hist[i]])) + "\n")
     out.close()
