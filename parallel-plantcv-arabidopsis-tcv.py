@@ -28,7 +28,7 @@ def main():
     args = options()
 
     # Get executable
-    exe = os.path.join(os.path.expanduser('~'), "github/scripts/plantcv-arabidopsis-tcv.py")
+    exe = os.path.join(os.path.expanduser('~'), "github/scripts/plantcv-arabidopsis-tcv-image.py")
 
     # Open output file
     condor = open(args.jobfile, "w")
