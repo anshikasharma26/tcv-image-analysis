@@ -75,7 +75,7 @@ def main():
 
             # Initialize hue histogram
             hue_hist = {}
-            for i in range(0, 179):
+            for i in range(0, 180):
                 hue_hist[i] = 0
 
             # Populate histogram
@@ -92,7 +92,7 @@ def main():
                 timepoint = timepoint.replace("dpi", "")
 
             # Output results
-            for i in range(0, 179):
+            for i in range(0, 180):
                 out.write("\t".join(map(str,
                                         [genotype, treatment, timepoint, replicate, total_px, i, hue_hist[i]])) + "\n")
     out.close()
