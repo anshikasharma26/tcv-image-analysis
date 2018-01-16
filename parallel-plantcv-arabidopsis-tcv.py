@@ -36,10 +36,10 @@ def main():
     condor.write("getenv = true\n")
     condor.write("accounting_group = $ENV(CONDOR_GROUP)\n")
     condor.write("request_cpus = 1\n")
-    condor.write("log = plantcv-arabidopsis-tcv.$(Cluster).$(Process).log")
-    condor.write("output = plantcv-arabidopsis-tcv.$(Cluster).$(Process).out")
-    condor.write("error = plantcv-arabidopsis-tcv.$(Cluster).$(Process).error")
-    condor.write("executable = /usr/bin/python")
+    condor.write("log = plantcv-arabidopsis-tcv.$(Cluster).$(Process).log\n")
+    condor.write("output = plantcv-arabidopsis-tcv.$(Cluster).$(Process).out\n")
+    condor.write("error = plantcv-arabidopsis-tcv.$(Cluster).$(Process).error\n")
+    condor.write("executable = /usr/bin/python\n")
 
     # Walk through the images directory
     for root, dirs, files in os.walk(args.dir):
