@@ -11,7 +11,7 @@ from sklearn import mixture
 def options():
     parser = argparse.ArgumentParser(description="Process Arabidopsis images infected with TCV.",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--image", help="Directory containing images.", required=True)
+    parser.add_argument("--image", help="An image file.", required=True)
     parser.add_argument("--pdfs", help="Naive Bayes PDF file.", required=True)
     parser.add_argument("--outfile", help="Output text filename.", required=True)
     parser.add_argument("--outdir", help="Output directory for images.", required=True)
