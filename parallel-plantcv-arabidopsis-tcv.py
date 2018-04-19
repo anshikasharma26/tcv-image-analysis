@@ -31,15 +31,18 @@ def main():
     # Get executable
     exe = os.path.join(os.path.expanduser('~'), "github/scripts/plantcv-arabidopsis-tcv-image.py")
 
+    if not os.path.exists("./logs"):
+        os.mkdir("./logs")
+
     # Open output file
     condor = open(args.jobfile, "w")
     condor.write("universe = vanilla\n")
     condor.write("getenv = true\n")
     condor.write("accounting_group = $ENV(CONDOR_GROUP)\n")
     condor.write("request_cpus = 1\n")
-    condor.write("log = plantcv-arabidopsis-tcv.$(Cluster).$(Process).log\n")
-    condor.write("output = plantcv-arabidopsis-tcv.$(Cluster).$(Process).out\n")
-    condor.write("error = plantcv-arabidopsis-tcv.$(Cluster).$(Process).error\n")
+    condor.write("log = ./logs/plantcv-arabidopsis-tcv.$(Cluster).$(Process).log\n")
+    condor.write("output = ./logs/plantcv-arabidopsis-tcv.$(Cluster).$(Process).out\n")
+    condor.write("error = ./logs/plantcv-arabidopsis-tcv.$(Cluster).$(Process).error\n")
     condor.write("executable = /usr/bin/python\n")
 
     # Walk through the images directory
