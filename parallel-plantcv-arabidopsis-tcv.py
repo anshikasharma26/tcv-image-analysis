@@ -12,6 +12,7 @@ def options():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--dir", help="Directory containing images.", required=True)
     parser.add_argument("--pdfs", help="Naive Bayes PDF file.", required=True)
+    parser.add_argument("--outdir", help="Output directory for images.", required=True)
     parser.add_argument("--jobfile", help="Output HTCondor job file.", required=True)
     parser.add_argument("--debug", help="Activate debug mode. Values can be None, 'print', or 'plot'", default=None)
 
@@ -46,7 +47,7 @@ def main():
         # We only want to process files
         for filename in files:
             condor.write("arguments = " + exe + " --image " + os.path.join(root, filename) + " --pdfs " + args.pdfs +
-                         " --outfile " + filename[:-3] + "results.txt\n")
+                         "--outdir " + args.outdir + " --outfile " + filename[:-3] + "results.txt\n")
             condor.write("queue\n\n")
 
     condor.close()

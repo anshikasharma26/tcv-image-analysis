@@ -4,6 +4,8 @@ import os
 import argparse
 import plantcv as pcv
 import numpy as np
+import cv2
+from sklearn import mixture
 
 
 def options():
@@ -12,6 +14,7 @@ def options():
     parser.add_argument("--image", help="Directory containing images.", required=True)
     parser.add_argument("--pdfs", help="Naive Bayes PDF file.", required=True)
     parser.add_argument("--outfile", help="Output text filename.", required=True)
+    parser.add_argument("--outdir", help="Output directory for images.", required=True)
     parser.add_argument("--debug", help="Activate debug mode. Values can be None, 'print', or 'plot'", default=None)
 
     args = parser.parse_args()
@@ -42,8 +45,8 @@ def main():
                                             size=1000, device=device, debug=args.debug)
     # Define a region of interest
     device, roi1, roi_hierarchy = pcv.define_roi(img=img, shape='rectangle', device=device, roi=None,
-                                                 roi_input='default', debug=args.debug, adjust=True, x_adj=1100,
-                                                 y_adj=450, w_adj=-970, h_adj=-570)
+                                                 roi_input='default', debug=args.debug, adjust=True, x_adj=450,
+                                                 y_adj=1000, w_adj=-400, h_adj=-1000)
     # Filter objects that overlap the ROI
     device, id_objects, obj_hierarchy_healthy = pcv.find_objects(img=img, mask=fill_image_healthy,
                                                                  device=device, debug=args.debug)
@@ -62,6 +65,14 @@ def main():
     device, mask = pcv.logical_or(img1=kept_mask_healthy, img2=kept_mask_unhealthy, device=device,
                                   debug=args.debug)
 
+    # Output a healthy/unhealthy image
+    classified_img = cv2.merge([np.zeros(np.shape(mask), dtype=np.uint8), kept_mask_healthy, kept_mask_unhealthy])
+    pcv.print_image(img=classified_img, filename=os.path.join(args.outdir, args.image[:-4] + ".classified.png"))
+
+    # Output a healthy/unhealthy image overlaid on the original image
+    overlayed = cv2.addWeighted(src1=np.copy(classified_img), alpha=0.5, src2=np.copy(img), beta=0.5, gamma=0)
+    pcv.print_image(img=overlayed, filename=os.path.join(args.outdir, args.image[:-4] + ".overlaid.png"))
+
     # Extract hue values from the image
     device, h = pcv.rgb2gray_hsv(img=img, channel="h", device=device, debug=args.debug)
 
@@ -73,10 +84,14 @@ def main():
     for i in range(0, 180):
         hue_hist[i] = 0
 
+    # Store all hue values
+    hue_values = []
+
     # Populate histogram
     total_px = len(plant_hues)
     for hue in plant_hues:
         hue_hist[hue] += 1
+        hue_values.append(hue)
 
     # Parse the filename
     genotype, treatment, replicate, timepoint = args.image[:-4].split("_")
@@ -91,6 +106,46 @@ def main():
         out.write("\t".join(map(str,
                                 [genotype, treatment, timepoint, replicate, total_px, i, hue_hist[i]])) + "\n")
     out.close()
+
+    # Calculate basic statistics
+    healthy_sum = int(np.sum(kept_mask_healthy))
+    unhealthy_sum = int(np.sum(kept_mask_unhealthy))
+    healthy_total_ratio = healthy_sum / float(healthy_sum + unhealthy_sum)
+    unhealthy_total_ratio = unhealthy_sum / float(healthy_sum + unhealthy_sum)
+    stats = open(args.outfile[:-4] + ".stats.txt", "w")
+    stats.write("%s, %f, %f, %f, %f" % (args.image, healthy_sum, unhealthy_sum, healthy_total_ratio,
+                                        unhealthy_total_ratio) + '\n')
+    stats.close()
+
+    # Fit a 3-component Gaussian Mixture Model
+    gmm = mixture.GaussianMixture(n_components=3, covariance_type="full", tol=0.001)
+    gmm.fit(np.expand_dims(hue_values, 1))
+    gmm3 = open(args.outfile[:-4] + ".gmm3.txt", "w")
+    gmm3.write("%s, %f, %f, %f, %f, %f, %f, %f, %f, %f" % (args.image, gmm.means_.ravel()[0], gmm.means_.ravel()[1],
+                                                           gmm.means_.ravel()[2], np.sqrt(gmm.covariances_.ravel()[0]),
+                                                           np.sqrt(gmm.covariances_.ravel()[1]),
+                                                           np.sqrt(gmm.covariances_.ravel()[2]),
+                                                           gmm.weights_.ravel()[0], gmm.weights_.ravel()[1],
+                                                           gmm.weights_.ravel()[2]) + '\n')
+    gmm3.close()
+
+    # Fit a 2-component Gaussian Mixture Model
+    gmm = mixture.GaussianMixture(n_components=2, covariance_type="full", tol=0.001)
+    gmm.fit(np.expand_dims(hue_values, 1))
+    gmm2 = open(args.outfile[:-4] + ".gmm2.txt", "w")
+    gmm2.write("%s, %f, %f, %f, %f, %f, %f" % (args.image, gmm.means_.ravel()[0], gmm.means_.ravel()[1],
+                                               np.sqrt(gmm.covariances_.ravel()[0]),
+                                               np.sqrt(gmm.covariances_.ravel()[1]), gmm.weights_.ravel()[0],
+                                               gmm.weights_.ravel()[1]) + '\n')
+    gmm2.close()
+
+    # Fit a 1-component Gaussian Mixture Model
+    gmm = mixture.GaussianMixture(n_components=1, covariance_type="full", tol=0.001)
+    gmm.fit(np.expand_dims(hue_values, 1))
+    gmm1 = open(args.outfile[:-4] + ".gmm1.txt", "w")
+    gmm1.write("%s, %f, %f, %f" % (args.image, gmm.means_.ravel()[0], np.sqrt(gmm.covariances_.ravel()[0]),
+                                   gmm.weights_.ravel()[0]) + '\n')
+    gmm1.close()
 
 
 if __name__ == '__main__':
