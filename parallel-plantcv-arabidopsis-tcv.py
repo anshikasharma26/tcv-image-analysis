@@ -47,7 +47,7 @@ def main():
         # We only want to process files
         for filename in files:
             condor.write("arguments = " + exe + " --image " + os.path.join(root, filename) + " --pdfs " + args.pdfs +
-                         "--outdir " + args.outdir + " --outfile " + filename[:-3] + "results.txt\n")
+                         " --outdir " + args.outdir + " --outfile " + filename[:-3] + "results.txt\n")
             condor.write("queue\n\n")
 
     condor.close()
