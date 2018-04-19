@@ -67,11 +67,13 @@ def main():
 
     # Output a healthy/unhealthy image
     classified_img = cv2.merge([np.zeros(np.shape(mask), dtype=np.uint8), kept_mask_healthy, kept_mask_unhealthy])
-    pcv.print_image(img=classified_img, filename=os.path.join(args.outdir, args.image[:-4] + ".classified.png"))
+    pcv.print_image(img=classified_img, filename=os.path.join(args.outdir,
+                                                              os.path.basename(args.image)[:-4] + ".classified.png"))
 
     # Output a healthy/unhealthy image overlaid on the original image
     overlayed = cv2.addWeighted(src1=np.copy(classified_img), alpha=0.5, src2=np.copy(img), beta=0.5, gamma=0)
-    pcv.print_image(img=overlayed, filename=os.path.join(args.outdir, args.image[:-4] + ".overlaid.png"))
+    pcv.print_image(img=overlayed, filename=os.path.join(args.outdir,
+                                                         os.path.basename(args.image)[:-4] + ".overlaid.png"))
 
     # Extract hue values from the image
     device, h = pcv.rgb2gray_hsv(img=img, channel="h", device=device, debug=args.debug)
@@ -94,7 +96,7 @@ def main():
         hue_values.append(hue)
 
     # Parse the filename
-    genotype, treatment, replicate, timepoint = args.image[:-4].split("_")
+    genotype, treatment, replicate, timepoint = os.path.basename(args.image)[:-4].split("_")
     replicate = replicate.replace("#", "")
     if timepoint[-3:] == "dbi":
         timepoint = -1
@@ -113,7 +115,7 @@ def main():
     healthy_total_ratio = healthy_sum / float(healthy_sum + unhealthy_sum)
     unhealthy_total_ratio = unhealthy_sum / float(healthy_sum + unhealthy_sum)
     stats = open(args.outfile[:-4] + ".stats.txt", "w")
-    stats.write("%s, %f, %f, %f, %f" % (args.image, healthy_sum, unhealthy_sum, healthy_total_ratio,
+    stats.write("%s, %f, %f, %f, %f" % (os.path.basename(args.image), healthy_sum, unhealthy_sum, healthy_total_ratio,
                                         unhealthy_total_ratio) + '\n')
     stats.close()
 
@@ -121,8 +123,9 @@ def main():
     gmm = mixture.GaussianMixture(n_components=3, covariance_type="full", tol=0.001)
     gmm.fit(np.expand_dims(hue_values, 1))
     gmm3 = open(args.outfile[:-4] + ".gmm3.txt", "w")
-    gmm3.write("%s, %f, %f, %f, %f, %f, %f, %f, %f, %f" % (args.image, gmm.means_.ravel()[0], gmm.means_.ravel()[1],
-                                                           gmm.means_.ravel()[2], np.sqrt(gmm.covariances_.ravel()[0]),
+    gmm3.write("%s, %f, %f, %f, %f, %f, %f, %f, %f, %f" % (os.path.basename(args.image), gmm.means_.ravel()[0],
+                                                           gmm.means_.ravel()[1], gmm.means_.ravel()[2],
+                                                           np.sqrt(gmm.covariances_.ravel()[0]),
                                                            np.sqrt(gmm.covariances_.ravel()[1]),
                                                            np.sqrt(gmm.covariances_.ravel()[2]),
                                                            gmm.weights_.ravel()[0], gmm.weights_.ravel()[1],
@@ -133,8 +136,8 @@ def main():
     gmm = mixture.GaussianMixture(n_components=2, covariance_type="full", tol=0.001)
     gmm.fit(np.expand_dims(hue_values, 1))
     gmm2 = open(args.outfile[:-4] + ".gmm2.txt", "w")
-    gmm2.write("%s, %f, %f, %f, %f, %f, %f" % (args.image, gmm.means_.ravel()[0], gmm.means_.ravel()[1],
-                                               np.sqrt(gmm.covariances_.ravel()[0]),
+    gmm2.write("%s, %f, %f, %f, %f, %f, %f" % (os.path.basename(args.image), gmm.means_.ravel()[0],
+                                               gmm.means_.ravel()[1], np.sqrt(gmm.covariances_.ravel()[0]),
                                                np.sqrt(gmm.covariances_.ravel()[1]), gmm.weights_.ravel()[0],
                                                gmm.weights_.ravel()[1]) + '\n')
     gmm2.close()
@@ -143,8 +146,8 @@ def main():
     gmm = mixture.GaussianMixture(n_components=1, covariance_type="full", tol=0.001)
     gmm.fit(np.expand_dims(hue_values, 1))
     gmm1 = open(args.outfile[:-4] + ".gmm1.txt", "w")
-    gmm1.write("%s, %f, %f, %f" % (args.image, gmm.means_.ravel()[0], np.sqrt(gmm.covariances_.ravel()[0]),
-                                   gmm.weights_.ravel()[0]) + '\n')
+    gmm1.write("%s, %f, %f, %f" % (os.path.basename(args.image), gmm.means_.ravel()[0],
+                                   np.sqrt(gmm.covariances_.ravel()[0]), gmm.weights_.ravel()[0]) + '\n')
     gmm1.close()
 
 
